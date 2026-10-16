@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 import uuid
 from simple_history.models import HistoricalRecords
 
@@ -95,6 +95,9 @@ class User(AbstractBaseUser):
             return False
 
     def has_perm(self, perm, obj=None):
+        return True
+
+    def has_module_perms(self, app_label):
         return True
 
     def save(self,*args,**kwargs):
