@@ -49,6 +49,10 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
+    CHAT_USER = 0
+    CNE_USER = 1
+    TYPE_CHOICES = ((CHAT_USER, "Chat User"),
+    (CNE_USER, "CNE User"))
     username                = models.CharField(max_length=30, unique=True)
     email                   = models.EmailField(max_length=60, blank=True, null=True)
     first_name              = models.CharField(max_length=30)
@@ -65,6 +69,8 @@ class User(AbstractBaseUser):
     created_by              = models.ForeignKey('self', related_name='+', blank=True, null=True, on_delete=models.CASCADE)
     updated_at              = models.DateTimeField(auto_now=True)
     updated_by              = models.ForeignKey('self', related_name='+', blank=True, null=True, on_delete=models.CASCADE)
+    organization            = models.ForeignKey('Organization',  related_name='+', blank=True, null=True, on_delete=models.DO_NOTHING)
+    type                    = models.CharField(choices=TYPE_CHOICES, default=TYPE_CHOICES[0][0])
     last_password_change    = models.DateTimeField(blank=True, null=True, auto_now_add = True)
     password_attempts       = models.SmallIntegerField(default=0)
     blocked                 = models.BooleanField(default=False)

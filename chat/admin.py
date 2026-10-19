@@ -41,6 +41,7 @@ class PermissionAdmin(admin.ModelAdmin):
 
 # Register your models here.
 
+admin.site.site_header = "Chat App"
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Role, RoleAdmin)
 admin.site.register(Permission, PermissionAdmin)
