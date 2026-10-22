@@ -49,10 +49,10 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
-    CHAT_USER = 0
-    CNE_USER = 1
-    TYPE_CHOICES = ((CHAT_USER, "Chat User"),
-    (CNE_USER, "CNE User"))
+    CHAT_APP_USER = 0
+    MAIN_APP_USER = 1
+    TYPE_CHOICES = ((CHAT_APP_USER, "Chat User"),
+    (MAIN_APP_USER, "CNE User"))
     username                = models.CharField(max_length=30, unique=True)
     email                   = models.EmailField(max_length=60, blank=True, null=True)
     first_name              = models.CharField(max_length=30)
