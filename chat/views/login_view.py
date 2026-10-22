@@ -3,12 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from chat.permissions import LoggingHasAPIKey
 from chat.models import User
-from chat.serializers import UserSerializer
+from chat.serializers import UserSerializer, RoleLoginSerializer
 from django.contrib.auth import authenticate
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import datetime
-from chat.util import get_tokens_for_user, set_access_cookies, set_refresh_cookies
+from chat.util import get_tokens_for_user, set_access_cookies, set_refresh_cookies, get_permissions_from_roles
 import requests, os, json
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -53,10 +53,18 @@ class LoginView(APIView):
         set_refresh_cookies(response, tokens['refresh'])
 
         serializer = UserSerializer(authenticated_user)
+        data = serializer.data
+
+        roles = user.roles.all()
+        permissions = get_permissions_from_roles(roles)
+
+        data['roles'] = RoleLoginSerializer(roles, many=True).data
+        data['permissions'] = permissions
+
         response.status_code = status.HTTP_200_OK
         response.headers['random_value_1'] = tokens['access']
         response.headers['random_value_2'] = tokens['refresh']
         
-        response.data = {"msg": "Login Successful", "data": serializer.data}
+        response.data = {"msg": "Login Successful", "user": data}
 
         return response
