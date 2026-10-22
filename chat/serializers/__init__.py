@@ -2,3 +2,5 @@ from .user_serializer import UserSerializer
 from .role_serializer import RoleSerializer
 from .organization_serializer import OrganizationSerializer
 from .permission_serializer import PermissionSerializer
+from .conversation_serializer import ConversationSerializer
+from .messages_serializer import MessageSerializer

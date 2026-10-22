@@ -5,3 +5,4 @@ from .organization_list_create_view import OrganizationListView
 from .organization_update_delete_view import OrganizationDetailView
 from .login_view import LoginView
 from .logout_view import LogoutView
+from .conversation_list_create_view import ConversationListView
