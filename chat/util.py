@@ -61,6 +61,16 @@ def unset_cookies(response):
     response.delete_cookie(settings.SIMPLE_JWT['AUTH_REFRESH_COOKIE'])
     response.delete_cookie(settings.CSRF_COOKIE_NAME)
 
+def get_permissions_from_roles(roles):
+    permissions = []
+
+    for role in roles:
+        role_permissions = role.permissions.all()
+        for permission in role_permissions:
+            permissions.append(permission.code_name)
+
+    return permissions
+
 @database_sync_to_async
 def send_message(sender_id, recipient_id, content, user):
     content = content.strip()

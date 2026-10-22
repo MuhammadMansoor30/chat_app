@@ -1,5 +1,5 @@
 from .user_serializer import UserSerializer
-from .role_serializer import RoleSerializer
+from .role_serializer import RoleSerializer, RoleLoginSerializer
 from .organization_serializer import OrganizationSerializer
 from .permission_serializer import PermissionSerializer
 from .conversation_serializer import ConversationSerializer
