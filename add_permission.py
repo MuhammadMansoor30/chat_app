@@ -1,6 +1,6 @@
 import os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE',
-                      'hms.settings')
+                      'chat_app.settings')
 
 import django
 django.setup()
@@ -16,6 +16,9 @@ all_permission = [
     {"name": "Create Organization", "code_name": "organization_create", "description": "User can create an organization"},
     {"name": "Update Organization", "code_name": "organization_update", "description": "User can update an organization"},
     {"name": "Delete Organization", "code_name": "organization_delete", "description": "User can delete an organization"},
+    {"name": "Read Conversation", "code_name": "conversation_read", "description": "User can view a conversation"},
+    {"name": "Read Message", "code_name": "message_read", "description": "User can view a message"},
+    {"name": "Create Message", "code_name": "message_create", "description": "User can send a message"},
 ]
 
 def add_permission():

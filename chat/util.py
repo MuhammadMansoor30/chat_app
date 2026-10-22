@@ -2,6 +2,9 @@ from rest_framework import pagination
 from rest_framework.response import Response
 from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
+from chat.models import User, Conversation, Message
+from channels.db import database_sync_to_async
+from datetime import datetime
 
 class CustomPagination(pagination.PageNumberPagination):
     
@@ -57,3 +60,29 @@ def unset_cookies(response):
     response.delete_cookie(settings.SIMPLE_JWT['AUTH_ACCESS_COOKIE'])
     response.delete_cookie(settings.SIMPLE_JWT['AUTH_REFRESH_COOKIE'])
     response.delete_cookie(settings.CSRF_COOKIE_NAME)
+
+@database_sync_to_async
+def send_message(sender_id, recipient_id, content, user):
+    content = content.strip()
+    
+    if not content:
+        raise ValueError("No Content Provided")
+
+    sender = User.objects.get(deleted=False, id=sender_id)
+    recipient = User.objects.get(deleted=False, id=recipient_id)
+
+    conversation = Conversation.objects.filter(participants__in=[sender, recipient]).distinct().first()
+    if conversation is not None:
+        conversation.last_message_time = datetime.now()
+        conversation.last_message = content
+        conversation.save()
+        
+    else:
+        conversation = Conversation.objects.create(organization=user.organization, last_message_time=datetime.now(), last_message=content)
+        conversation.participants.add(sender, recipient)
+        conversation.save()
+
+    message = Message.objects.create(conversation=conversation, message=content, sender=sender, created_by=user)
+
+    return message
+    

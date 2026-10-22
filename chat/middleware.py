@@ -15,12 +15,12 @@ def get_user_from_token(raw_token):
 
         User = get_user_model()
 
-        return User.objects.get(pk=user_id, is_active=True)
+        return User.objects.get(pk=user_id, deleted=False)
 
-    except (TokenError, KeyError, TypeError, ValueError):
+    except (TokenError, KeyError, TypeError, ValueError) as e:
         return AnonymousUser()
 
-    except get_user_model().DoesNotExist:
+    except get_user_model().DoesNotExist as e:
         return AnonymousUser()
 
 
@@ -30,30 +30,8 @@ class JWTAuthMiddleware:
 
     async def __call__(self, scope, receive, send):
         scope = dict(scope)
-
-        headers = dict(scope.get("headers", []))
-        raw_token = None
-
-        authorization = headers.get(b"authorization", b"").decode("latin1")
-
-        parts = authorization.split()
-
-        if len(parts) == 2 and parts[0].lower() == "bearer":
-            raw_token = parts[1]
-
-        if not raw_token:
-            cookie_header = headers.get(b"cookie", b"").decode("latin1")
-
-            cookies = SimpleCookie()
-            cookies.load(cookie_header)
-
-            cookie_name = settings.SIMPLE_JWT.get("AUTH_ACCESS_COOKIE")
-
-            if cookie_name:
-                cookie = cookies.get(cookie_name)
-
-                if cookie:
-                    raw_token = cookie.value
+        headers = scope.get("query_string")
+        raw_token = headers.decode("utf-8").split("=")[1]
 
         if raw_token:
             scope["user"] = await get_user_from_token(raw_token)

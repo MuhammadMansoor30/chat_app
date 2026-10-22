@@ -1,5 +1,5 @@
 from django.contrib import admin
-from chat.models import User, Role, Permission
+from chat.models import User, Role, Permission, Conversation, Message
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.admin import SimpleListFilter
 from simple_history.admin import SimpleHistoryAdmin
@@ -39,9 +39,19 @@ class PermissionAdmin(admin.ModelAdmin):
     search_fields = ['code_name']
     list_display = ('name', 'code_name', 'description')
 
+class ConversationAdmin(admin.ModelAdmin):
+    raw_id_fields = ('organization', 'created_by', 'updated_by')
+
+class MessageAdmin(admin.ModelAdmin):
+    search_fields = ['message', 'sender__username']
+    list_display = ('message', 'sender__username')
+    raw_id_fields = ('conversation', 'created_by', 'updated_by')
+
 # Register your models here.
 
 admin.site.site_header = "Chat App"
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Role, RoleAdmin)
 admin.site.register(Permission, PermissionAdmin)
+admin.site.register(Conversation, ConversationAdmin)
+admin.site.register(Message, MessageAdmin)

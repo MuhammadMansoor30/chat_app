@@ -17,14 +17,13 @@ load_dotenv(BASE_DIR / ".env")
 
 class LoginView(APIView):
     authentication_classes = ()
-    # permission_classes = (LoggingHasAPIKey,)
-    permission_classes = ()
+    permission_classes = (LoggingHasAPIKey,)
 
     def post(self, request, *args, **kwargs):
         data = request.data
         try:
             user = User.objects.get(username=data['username'])
-            if user.type == User.CNE_USER:  
+            if user.type == User.MAIN_APP_USER:  
                 res = requests.post(url=os.getenv("APP_LOGIN_URL"), data=json.dumps(data), headers={"Content-Type": "application/json"})
                 if res.status_code == 200:
                     user.set_password(data.get("password"))
@@ -36,7 +35,7 @@ class LoginView(APIView):
             if res.status_code == 200:
                 res_data = res.json()
 
-                user = User.objects.create(username=res_data['username'], cnic=res_data['cnic'], first_name=res_data['first_name'], last_name=res_data['last_name'], mobile=res_data['mobile'], gender=res_data['gender'], type=User.CNE_USER)
+                user = User.objects.create(username=res_data['username'], cnic=res_data['cnic'], first_name=res_data['first_name'], last_name=res_data['last_name'], mobile=res_data['mobile'], gender=res_data['gender'], type=User.MAIN_APP_USER)
 
                 user.set_password(data.get("password"))
                 user.save()
