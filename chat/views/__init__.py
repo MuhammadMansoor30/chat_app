@@ -8,3 +8,4 @@ from .logout_view import LogoutView
 from .conversation_list_create_view import ConversationListView
 from .current_user_view import CurrentUserView
 from .refresh_view import RefreshView
+from .message_list_create_view import MessageListView

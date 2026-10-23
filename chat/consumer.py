@@ -2,6 +2,7 @@ import json
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from chat.models import User
 from chat.util import send_message
+from chat.serializers import MessageSerializer
 import traceback
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
@@ -34,7 +35,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def receive_json(self, data, **kwargs):
         try:
             # Check and update according to my flow
-            message = await send_message(self.user.id, data["recipient_id"], data["content"], self.user)
+            message = await send_message(self.user.id, data["recipient_id"], data["content"], self.user, data)
 
             # Notify the sender and recipient.
             for user_id in {message.sender.id, int(data["recipient_id"])}:
@@ -42,7 +43,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     f"user_{user_id}",
                     {
                         "type": "chat.message",  # executes chat_message func
-                        "message": message.message,
+                        "message": MessageSerializer(message).data,
                     },
                 )
 

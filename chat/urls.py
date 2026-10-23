@@ -12,6 +12,8 @@ urlpatterns = [
     path("permission/",                     views.PermissionListView.as_view()),
     path("organization/",                   views.OrganizationListView.as_view()),
     path("organization/<int:pk>",           views.OrganizationDetailView.as_view()),
+    path("conversation/",                   views.ConversationListView.as_view()),
+    path("messages/",                       views.MessageListView.as_view()),
 
 ]
 

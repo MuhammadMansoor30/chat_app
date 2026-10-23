@@ -1,5 +1,5 @@
 from django.contrib import admin
-from chat.models import User, Role, Permission, Conversation, Message
+from chat.models import User, Role, Permission, Conversation, Message, Organization
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.admin import SimpleListFilter
 from simple_history.admin import SimpleHistoryAdmin
@@ -28,7 +28,7 @@ class CustomUserAdmin(UserAdmin, SimpleHistoryAdmin):
         }),
     )
     filter_horizontal=[]
-    raw_id_fields = ('created_by', 'updated_by')
+    raw_id_fields = ('organization', 'created_by', 'updated_by')
 
 class RoleAdmin(SimpleHistoryAdmin):
     search_fields = ['code_name', 'name']
@@ -38,6 +38,11 @@ class RoleAdmin(SimpleHistoryAdmin):
 class PermissionAdmin(admin.ModelAdmin):
     search_fields = ['code_name']
     list_display = ('name', 'code_name', 'description')
+
+class OrganizationAdmin(admin.ModelAdmin):
+    search_fields = ['name']
+    list_display = ('name', 'created_at')
+    raw_id_fields = ('created_by', 'updated_by')
 
 class ConversationAdmin(admin.ModelAdmin):
     raw_id_fields = ('organization', 'created_by', 'updated_by')
@@ -55,3 +60,4 @@ admin.site.register(Role, RoleAdmin)
 admin.site.register(Permission, PermissionAdmin)
 admin.site.register(Conversation, ConversationAdmin)
 admin.site.register(Message, MessageAdmin)
+admin.site.register(Organization, OrganizationAdmin)
