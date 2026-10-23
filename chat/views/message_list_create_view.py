@@ -12,7 +12,7 @@ from chat.util import send_message
 from django.db import transaction
 from datetime import datetime
 
-class ConversationListView(ListAPIView):
+class MessageListView(ListAPIView):
     permission_classes = (IsAuthenticated, )
     pagination_class = CustomPagination
     serializer_class = MessageSerializer
@@ -22,7 +22,7 @@ class ConversationListView(ListAPIView):
         return super().get(request, *args, **kwargs)
         
     def get_queryset(self):
-        return Message.objects.filter(conversation = self.request.GET.get("conversation"), deleted=False).order_by("-created_at")
+        return Message.objects.filter(conversation = self.request.GET.get("conversation"), deleted=False).order_by("created_at")
 
     @permission_required(['messages_create'])
     def post(self, request, *args, **kwargs):

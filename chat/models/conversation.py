@@ -4,6 +4,7 @@ from chat.models import AtByMixin
 class Conversation(AtByMixin):
     participants      = models.ManyToManyField("User", related_name="conversations")
     last_message      = models.CharField(max_length=255)
+    last_message_by   = models.ForeignKey("User", related_name='+', on_delete=models.DO_NOTHING)
     organization      = models.ForeignKey("Organization", related_name="+", on_delete=models.DO_NOTHING, null=True, blank=True)
     last_message_time = models.DateTimeField(null=True, blank=True)
 
