@@ -49,7 +49,7 @@ class ConversationAdmin(admin.ModelAdmin):
 
 class MessageAdmin(admin.ModelAdmin):
     search_fields = ['message', 'sender__username']
-    list_display = ('message', 'sender__username')
+    list_display = ('message', 'sender__username', 'created_at')
     raw_id_fields = ('conversation', 'created_by', 'updated_by')
 
 # Register your models here.

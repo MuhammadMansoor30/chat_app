@@ -1,6 +1,7 @@
 from rest_framework import pagination
 from rest_framework.response import Response
 from django.conf import settings
+from django.db import transaction
 from rest_framework_simplejwt.tokens import RefreshToken
 from chat.models import User, Conversation, Message
 from channels.db import database_sync_to_async
@@ -71,8 +72,8 @@ def get_permissions_from_roles(roles):
 
     return permissions
 
-@database_sync_to_async
-def send_message(sender_id, recipient_id, content, user, data=None):
+
+def send_message_sync(sender_id, recipient_id, content, content_type, user, data=None):
     content = content.strip()
     
     if not content:
@@ -81,19 +82,28 @@ def send_message(sender_id, recipient_id, content, user, data=None):
     sender = User.objects.get(deleted=False, id=sender_id)
     recipient = User.objects.get(deleted=False, id=recipient_id)
 
-    conversation = Conversation.objects.filter(participants__in=[sender, recipient]).distinct().first()
-    if conversation is not None:
-        conversation.last_message_time = datetime.now()
-        conversation.last_message = content
-        conversation.last_message_by = sender
-        conversation.save()
-        
-    else:
-        conversation = Conversation.objects.create(organization=user.organization, last_message_time=datetime.now(), last_message=content, last_message_by=sender)
-        conversation.participants.add(sender, recipient)
-        conversation.save()
+    with transaction.atomic():
+        conversation = Conversation.objects.filter(participants__in=[sender, recipient]).distinct().first()
+        if conversation is not None:
+            conversation.last_message_time = datetime.now()
+            conversation.last_message = content
+            conversation.last_message_by = sender
+            conversation.save()
+            
+        else:
+            conversation = Conversation.objects.create(organization=user.organization, last_message_time=datetime.now(), last_message=content, last_message_by=sender)
+            conversation.participants.add(sender, recipient)
+            conversation.save()
 
-    message = Message.objects.create(conversation=conversation, message=content, sender=sender, created_by=user, status=data['status'])
+
+        if content_type == "text":
+            message = Message.objects.create(conversation=conversation, message=content, sender=sender, created_by=user, status=data['status'])
+        elif "image" in content_type:
+            message = Message.objects.create(conversation=conversation, attachment=content, sender=sender, created_by=user, status=data['status'], type=Message.PICTURE)
 
     return message
+
+@database_sync_to_async
+def send_message(sender_id, recipient_id, content, content_type, user, data=None):
+    return send_message_sync(sender_id, recipient_id, content, content_type, user, data)
     
