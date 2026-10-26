@@ -35,7 +35,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def receive_json(self, data, **kwargs):
         try:
             # Check and update according to my flow
-            message = await send_message(self.user.id, data["recipient_id"], data["content"], self.user, data)
+            message = await send_message(self.user.id, data["recipient_id"], data["content"], "text", self.user, data)
 
             # Notify the sender and recipient.
             for user_id in {message.sender.id, int(data["recipient_id"])}:
