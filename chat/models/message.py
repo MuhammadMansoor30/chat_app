@@ -6,10 +6,12 @@ class Message(AtByMixin):
     PICTURE = 1
     VIDEO = 2
     DOCUMENT = 3
+    VOICE = 4
     MESSAGE_TYPES = ((TEXT, "Text"),
     (PICTURE, "Image"),
     (VIDEO, "Video"),
-    (DOCUMENT, "Document"))
+    (DOCUMENT, "Document"),
+    (VOICE, "Voice"))
 
     PENDING = 0
     SENT = 1

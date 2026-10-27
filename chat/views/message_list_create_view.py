@@ -14,6 +14,7 @@ from minio.error import S3Error
 from pathlib import Path
 from dotenv import load_dotenv
 import os, mimetypes
+from datetime import datetime
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -33,26 +34,58 @@ class MessageListView(ListAPIView):
 
     @permission_required(['message_create'])
     def post(self, request, *args, **kwargs):
+        print(request.data)
+        sender_id = request.user.id
+        recipient_id = request.data.get("recipient_id")
+        conversation_id = request.data.get("conversation_id")
+
+        if sender_id and recipient_id is None:
+            return Response({"msg": "Please select a valid sender and recipient"}, status=status.HTTP_400_BAD_REQUEST)
         
-        for fil in request.data.getlist("content[]"):
-            sender_id = request.user.id
-            recipient_id = request.data.get("recipient_id")
+        if request.data.get("type") == "file":
+            for fil in request.data.getlist("content[]"):
 
-            if sender_id and recipient_id is None:
-                return Response({"msg": "Please select a valid sender and recipient"}, status=status.HTTP_400_BAD_REQUEST)
+                file_path = f"chat_app/{conversation_id}/{fil.name}"
+                content_type, _ = mimetypes.guess_type(fil.name)
 
-            file_path = f"test_pdf/{fil.name}"
-            content_type, _ = mimetypes.guess_type(fil.name)
+                if not content_type:
+                    content_type = 'application/octet-stream'     
+                try:
+                    client = Minio(os.environ["BUCKET_HOST"],access_key=os.environ["BUCKET_KEY"],secret_key=os.environ["BUCKET_SECRET"])
+                    bucket_name = os.environ["BUCKET_NAME"]
+        
+                    client.put_object(bucket_name = bucket_name, object_name = file_path , data = fil, length = fil.size, content_type=content_type)
+                except S3Error as e:
+                    print(e)
 
-            # if not content_type:
-            #     content_type = 'application/octet-stream'     
-            # try:
-            #     client = Minio(os.environ("BUCKET_HOST"),access_key=os.environ("BUCKET_KEY"),secret_key=os.environ("BUCKET_SECRET"))
-            #     bucket_name = os.environ("BUCKET_NAME")
+                message = send_message_sync(sender_id, recipient_id, file_path, content_type, request.user, request.data) 
+                serializer = MessageSerializer(message)
+
+                channel_layer = get_channel_layer()
+
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{sender_id}",
+                    {
+                        "type": "chat.message",
+                        "message": serializer.data,
+                    },
+                )
+        else:
+            audio_file = request.data.get("content")
+
+            file_name = f"Audio_{datetime.now()}" 
+            file_path = f"chat_app/{conversation_id}/{file_name}"
+            content_type = audio_file.content_type
+
+            if not content_type:
+                content_type = 'application/octet-stream'     
+            try:
+                client = Minio(os.environ["BUCKET_HOST"],access_key=os.environ["BUCKET_KEY"],secret_key=os.environ["BUCKET_SECRET"])
+                bucket_name = os.environ["BUCKET_NAME"]
     
-            #     client.put_object(bucket_name = bucket_name, object_name = file_path , data = fil, length = fil.size, content_type=content_type)
-            # except S3Error as e:
-            #     print(e)
+                client.put_object(bucket_name = bucket_name, object_name = file_path , data = audio_file.file, length = audio_file.size, content_type=content_type)
+            except S3Error as e:
+                print(e)
 
             message = send_message_sync(sender_id, recipient_id, file_path, content_type, request.user, request.data) 
             serializer = MessageSerializer(message)
