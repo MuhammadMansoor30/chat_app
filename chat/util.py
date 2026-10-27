@@ -100,6 +100,8 @@ def send_message_sync(sender_id, recipient_id, content, content_type, user, data
             message = Message.objects.create(conversation=conversation, message=content, sender=sender, created_by=user, status=data['status'])
         elif "image" in content_type:
             message = Message.objects.create(conversation=conversation, attachment=content, sender=sender, created_by=user, status=data['status'], type=Message.PICTURE)
+        elif "audio" in content_type:
+            message = Message.objects.create(conversation=conversation, attachment=content, sender=sender, created_by=user, status=data['status'], type=Message.VOICE)
 
     return message
 
