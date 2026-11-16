@@ -9,7 +9,7 @@ class ConversationSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         organization_name = instance.organization.name if instance.organization else None
         last_message_by_name = instance.last_message_by.full_name if instance.last_message_by else None
-        participants = instance.participants.all().values("id", "full_name")
+        participants = instance.participants.all().values("id", "full_name", "is_online", "last_seen")
         instance = super().to_representation(instance)
         instance['organization_name'] = organization_name
         instance['last_message_by_name'] = last_message_by_name

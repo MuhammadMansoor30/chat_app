@@ -14,7 +14,7 @@ from minio.error import S3Error
 from pathlib import Path
 from dotenv import load_dotenv
 import os, mimetypes
-from datetime import datetime
+from datetime import datetime, timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -30,46 +30,35 @@ class MessageListView(ListAPIView):
         return super().get(request, *args, **kwargs)
         
     def get_queryset(self):
-        return Message.objects.filter(conversation = self.request.GET.get("conversation"), deleted=False).order_by("created_at")
+        return Message.objects.filter(conversation = self.request.GET.get("conversation"), deleted=False).order_by("-created_at")
 
     @permission_required(['message_create'])
     def post(self, request, *args, **kwargs):
-        print(request.data)
         sender_id = request.user.id
-        recipient_id = request.data.get("recipient_id")
+        recipients = request.data.get("recipients[]")
         conversation_id = request.data.get("conversation_id")
+        group_name = request.data.get("group_name")
+        message_ids = []
+        urls = []
 
-        if sender_id and recipient_id is None:
+        if sender_id is None and len(recipients) == 0:
             return Response({"msg": "Please select a valid sender and recipient"}, status=status.HTTP_400_BAD_REQUEST)
         
+        client = Minio(os.environ["BUCKET_HOST"],access_key=os.environ["BUCKET_KEY"],secret_key=os.environ["BUCKET_SECRET"])
         if request.data.get("type") == "file":
             for fil in request.data.getlist("content[]"):
+                file_path = f"chat_app/{conversation_id}/{fil}"
+                content_type, _ = mimetypes.guess_type(fil)
 
-                file_path = f"chat_app/{conversation_id}/{fil.name}"
-                content_type, _ = mimetypes.guess_type(fil.name)
+                url = client.presigned_put_object(os.environ["BUCKET_NAME"], file_path, expires=timedelta(hours=2))
 
-                if not content_type:
-                    content_type = 'application/octet-stream'     
-                try:
-                    client = Minio(os.environ["BUCKET_HOST"],access_key=os.environ["BUCKET_KEY"],secret_key=os.environ["BUCKET_SECRET"])
-                    bucket_name = os.environ["BUCKET_NAME"]
-        
-                    client.put_object(bucket_name = bucket_name, object_name = file_path , data = fil, length = fil.size, content_type=content_type)
-                except S3Error as e:
-                    print(e)
-
-                message = send_message_sync(sender_id, recipient_id, file_path, content_type, request.user, request.data) 
+                message = send_message_sync(sender_id, recipients, group_name, file_path, content_type, request.user, request.data) 
                 serializer = MessageSerializer(message)
 
-                channel_layer = get_channel_layer()
+                urls.append(url)
+                message_ids.append(serializer.data['id'])
 
-                async_to_sync(channel_layer.group_send)(
-                    f"user_{sender_id}",
-                    {
-                        "type": "chat.message",
-                        "message": serializer.data,
-                    },
-                )
+            return Response({"message_id": message_ids, "urls": urls}, status=status.HTTP_201_CREATED)
         else:
             audio_file = request.data.get("content")
 
@@ -77,27 +66,9 @@ class MessageListView(ListAPIView):
             file_path = f"chat_app/{conversation_id}/{file_name}"
             content_type = audio_file.content_type
 
-            if not content_type:
-                content_type = 'application/octet-stream'     
-            try:
-                client = Minio(os.environ["BUCKET_HOST"],access_key=os.environ["BUCKET_KEY"],secret_key=os.environ["BUCKET_SECRET"])
-                bucket_name = os.environ["BUCKET_NAME"]
-    
-                client.put_object(bucket_name = bucket_name, object_name = file_path , data = audio_file.file, length = audio_file.size, content_type=content_type)
-            except S3Error as e:
-                print(e)
+            url = client.presigned_put_object(os.environ["BUCKET_NAME"], file_path, expires=timedelta(hours=2))
 
-            message = send_message_sync(sender_id, recipient_id, file_path, content_type, request.user, request.data) 
+            message = send_message_sync(sender_id, recipients, group_name, file_path, content_type, request.user, request.data) 
             serializer = MessageSerializer(message)
 
-            channel_layer = get_channel_layer()
-
-            async_to_sync(channel_layer.group_send)(
-                f"user_{sender_id}",
-                {
-                    "type": "chat.message",
-                    "message": serializer.data,
-                },
-            )
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response({"message_id": serializer.data["id"], "urls": url}, status=status.HTTP_201_CREATED)

@@ -53,6 +53,7 @@ class User(AbstractBaseUser):
     MAIN_APP_USER = 1
     TYPE_CHOICES = ((CHAT_APP_USER, "Chat App User"),
     (MAIN_APP_USER, "Main App User"))
+
     username                = models.CharField(max_length=30, unique=True)
     email                   = models.EmailField(max_length=60, blank=True, null=True)
     first_name              = models.CharField(max_length=30)
@@ -71,6 +72,8 @@ class User(AbstractBaseUser):
     updated_by              = models.ForeignKey('self', related_name='+', blank=True, null=True, on_delete=models.CASCADE)
     organization            = models.ForeignKey('Organization',  related_name='+', blank=True, null=True, on_delete=models.DO_NOTHING)
     type                    = models.IntegerField(choices=TYPE_CHOICES, default=TYPE_CHOICES[0][0])
+    is_online               = models.BooleanField(default=False)
+    last_seen               = models.DateTimeField(auto_now=True, null=True, blank=True)
     last_password_change    = models.DateTimeField(blank=True, null=True, auto_now_add = True)
     password_attempts       = models.SmallIntegerField(default=0)
     blocked                 = models.BooleanField(default=False)
