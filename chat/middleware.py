@@ -30,7 +30,7 @@ class JWTAuthMiddleware:
 
     async def __call__(self, scope, receive, send):
         scope = dict(scope)
-        headers = scope.get("query_string")
+        headers = scope.get("query_string", b"")
         raw_token = headers.decode("utf-8").split("=")[1]
 
         if raw_token:

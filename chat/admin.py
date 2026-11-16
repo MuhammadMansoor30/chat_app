@@ -16,7 +16,7 @@ class RoleFilter(SimpleListFilter):
             return queryset.filter(roles__id__in=[self.value()])
 
 class CustomUserAdmin(UserAdmin, SimpleHistoryAdmin):
-    list_display = ('username', 'created_at', 'updated_at')
+    list_display = ('username', 'created_at', 'updated_at', 'last_seen')
     readonly_fields = ['is_staff']
     search_fields = ['username', 'full_name', 'cnic']
     list_filter = ('deleted', RoleFilter)

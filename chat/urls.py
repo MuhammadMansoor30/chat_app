@@ -7,6 +7,7 @@ urlpatterns = [
     path("logout",                          views.LogoutView.as_view()),
     path("refresh",                         views.RefreshView.as_view()),
     path("current",                         views.CurrentUserView.as_view()),
+    path("users/",                          views.UserListView.as_view()),
     path("role/",                           views.RoleListView.as_view()),
     path("role/<int:pk>",                   views.RoleDetailView.as_view()),
     path("permission/",                     views.PermissionListView.as_view()),
@@ -14,9 +15,10 @@ urlpatterns = [
     path("organization/<int:pk>",           views.OrganizationDetailView.as_view()),
     path("conversation/",                   views.ConversationListView.as_view()),
     path("messages/",                       views.MessageListView.as_view()),
+    path("messages/<int:pk>/",               views.MessagesDetailView.as_view()),
 
 ]
 
 websocket_pattern = [
-    path("ws/chat/", ChatConsumer.as_asgi()),
+    path("ws/chat/<int:conversation>/",      ChatConsumer.as_asgi()),
 ]
