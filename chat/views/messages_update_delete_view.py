@@ -38,7 +38,7 @@ class MessagesDetailView(APIView):
     @permission_required(['message_delete'])
     def delete(self, request, pk):
         message = self.get_object(pk)
-        message.delete = True
+        message.deleted = True
         message.updated_by = request.user
         message.save()
 
