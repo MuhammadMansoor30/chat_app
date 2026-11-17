@@ -34,3 +34,12 @@ class MessagesDetailView(APIView):
         )
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @permission_required(['message_delete'])
+    def delete(self, request, pk):
+        message = self.get_object(pk)
+        message.delete = True
+        message.updated_by = request.user
+        message.save()
+
+        return Response({"msg": "Message Deleted Successfully"}, status=status.HTTP_200_OK)

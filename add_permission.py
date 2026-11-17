@@ -8,6 +8,7 @@ django.setup()
 from chat.models import Permission
 
 all_permission = [
+    {"name": "Read User", "code_name": "user_read", "description": "User can read other users"},
     {"name": "Read Role", "code_name": "role_read", "description": "User can read all roles"},
     {"name": "Create Role", "code_name": "role_create", "description": "User can create roles"},
     {"name": "Update Role", "code_name": "role_update", "description": "User can udpate roles"},
@@ -17,8 +18,10 @@ all_permission = [
     {"name": "Update Organization", "code_name": "organization_update", "description": "User can update an organization"},
     {"name": "Delete Organization", "code_name": "organization_delete", "description": "User can delete an organization"},
     {"name": "Read Conversation", "code_name": "conversation_read", "description": "User can view a conversation"},
+    {"name": "Create Conversation", "code_name": "conversation_create", "description": "Users can create a conversation"},
     {"name": "Read Message", "code_name": "message_read", "description": "User can view a message"},
     {"name": "Create Message", "code_name": "message_create", "description": "User can send a message"},
+    {"name": "Delete Message", "code_name": "message_delete", "description": "User can delete a message"},
 ]
 
 def add_permission():
@@ -34,6 +37,6 @@ def add_permission():
 
 
 if __name__ == '__main__':
-    print("Adding permissions to HMS...")
+    print("Adding permissions to Chat App...")
     add_permission()
 

@@ -15,10 +15,10 @@ urlpatterns = [
     path("organization/<int:pk>",           views.OrganizationDetailView.as_view()),
     path("conversation/",                   views.ConversationListView.as_view()),
     path("messages/",                       views.MessageListView.as_view()),
-    path("messages/<int:pk>/",               views.MessagesDetailView.as_view()),
+    path("messages/<int:pk>/",              views.MessagesDetailView.as_view()),
 
 ]
 
 websocket_pattern = [
-    path("ws/chat/<int:conversation>/",      ChatConsumer.as_asgi()),
+    path("ws/chat/",      ChatConsumer.as_asgi()),
 ]
